@@ -12,7 +12,7 @@ import {
 import { ExplorerLink } from "../../ExplorerLink";
 import { useState } from "react";
 import { ApiLockedObject } from "@/types/types";
-import { CreateEscrow } from "../../escrows/CreateEscrow";
+// import { CreateEscrow } from "../../escrows/CreateEscrow";
 import { useUnlockMutation } from "@/mutations/locked";
 
 /**
@@ -109,11 +109,11 @@ export function Locked({
             {isToggled ? <ArrowUpIcon /> : <ArrowDownIcon />}
           </Button>
         )}
-        {isToggled && (
+        {/* {isToggled && (
           <div className="min-w-[340px] w-full justify-self-start text-left">
             <CreateEscrow locked={locked} />
           </div>
-        )}
+        )} */}
       </div>
     </SuiObjectDisplay>
   );

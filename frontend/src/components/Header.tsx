@@ -2,24 +2,37 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGenerateDemoData } from "@/mutations/demo";
-import { ConnectButton } from "@mysten/dapp-kit";
-import { SizeIcon } from "@radix-ui/react-icons";
+
+import logo from '../images/logo.jpg';
+
 import { Box, Button, Container, Flex, Heading } from "@radix-ui/themes";
 import { NavLink } from "react-router-dom";
+import AccountDropdown, { AccountData } from "./zkloginconnect/zkloginconnect";
+import { useState } from "react";
 
 const menu = [
   {
     title: "Escrows",
     link: "/escrows",
+    params: { type: "escrows" },
+
   },
   {
     title: "Manage Objects",
     link: "/locked",
+    params: { type: "locked" },
   },
 ];
 
+
+
 export function Header() {
-  const { mutate: demoBearMutation, isPending } = useGenerateDemoData();
+  const [account, setAccounts] = useState<AccountData[]>([]);
+  const { mutate: demoBearMutation, isPending } = useGenerateDemoData(account);
+
+  // function clicks() {
+  //   console.log(account[0].userAddr)
+  // }
   return (
     <Container>
       <Flex
@@ -31,8 +44,8 @@ export function Header() {
       >
         <Box>
           <Heading className="flex items-center gap-3">
-            <SizeIcon width={24} height={24} />
-            Trading Demo
+            <img src={logo} width={38} height={38} alt="logo" />
+            CommuSui
           </Heading>
         </Box>
 
@@ -40,12 +53,15 @@ export function Header() {
           {menu.map((item) => (
             <NavLink
               key={item.link}
-              to={item.link}
+              // to={item.link}
+              to={{
+                pathname: item.link,
+                search: new URLSearchParams({ ...item.params, account: JSON.stringify(account) }).toString(),
+              }}
               className={({ isActive, isPending }) =>
-                `cursor-pointer flex items-center gap-2 ${
-                  isPending
-                    ? "pending"
-                    : isActive
+                `cursor-pointer flex items-center gap-2 ${isPending
+                  ? "pending"
+                  : isActive
                     ? "font-bold text-blue-600"
                     : ""
                 }`
@@ -61,14 +77,15 @@ export function Header() {
             disabled={isPending}
             onClick={() => {
               demoBearMutation();
+              console.log(account)
             }}
           >
-            New Demo Bear
+            Create Data Assert
           </Button>
         </Box>
 
         <Box className="connect-wallet-wrapper">
-          <ConnectButton />
+          <AccountDropdown onAccountsChange={setAccounts} />
         </Box>
       </Flex>
     </Container>

@@ -15,10 +15,8 @@ import { ExplorerLink } from "../ExplorerLink";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ApiEscrowObject } from "@/types/types";
-import {
-  useAcceptEscrowMutation,
-  useCancelEscrowMutation,
-} from "@/mutations/escrow";
+import { useAcceptEscrowMutation, useCancelEscrowMutation } from "@/mutations/escrow";
+
 import { useGetLockedObject } from "@/hooks/useGetLockedObject";
 import { LockedObject } from "../locked/LockedObject";
 

@@ -5,7 +5,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { Root } from "./root";
 import { LockedDashboard } from "@/routes/LockedDashboard";
-import { EscrowDashboard } from "@/routes/EscrowDashboard";
+import { EscrowDashboard } from "./EscrowDashboard";
 
 export const router = createBrowserRouter([
   {

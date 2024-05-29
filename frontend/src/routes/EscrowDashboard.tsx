@@ -6,17 +6,34 @@ import { Tabs, Tooltip } from "@radix-ui/themes";
 import { LockedList } from "../components/locked/ApiLockedList";
 import { EscrowList } from "../components/escrows/EscrowList";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useLocation } from "react-router-dom";
+import { AccountData } from "@/components/zkloginconnect/zkloginconnect";
+// import { useCurrentAccount } from "@mysten/dapp-kit";
 
 export function EscrowDashboard() {
-  const account = useCurrentAccount();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+
+
+  let account: AccountData | null = null;
+
+  try {
+    const accountString = params.get('account');
+    if (accountString) {
+      account = JSON.parse(accountString);
+    }
+  } catch (e) {
+    console.error("Failed to parse account data", e);
+  }
+
+
   const tabs = [
     {
       name: "Requested Escrows",
       component: () => (
         <EscrowList
           params={{
-            recipient: account?.address,
+            recipient: account?.userAddr,
             swapped: "false",
             cancelled: "false",
           }}
@@ -41,7 +58,7 @@ export function EscrowDashboard() {
       component: () => (
         <EscrowList
           params={{
-            sender: account?.address,
+            sender: account?.userAddr,
             swapped: "false",
             cancelled: "false",
           }}
