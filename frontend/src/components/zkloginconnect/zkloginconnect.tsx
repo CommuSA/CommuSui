@@ -21,8 +21,9 @@ import "./zklogin.less";
 /* Configuration */
 
 import config from "./config.json"; // copy and modify config.example.json with your own values
+import { CONSTANTS } from "@/constants";
 
-const NETWORK: NetworkName = "testnet";
+export const NETWORK: NetworkName = "devnet";
 const MAX_EPOCH = 2; // keep ephemeral keys active for this many Sui epochs from now (1 epoch ~= 24h)
 
 const suiClient = new SuiClient({
@@ -67,15 +68,14 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onAccountsChan
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     useEffect(() => {
-        onAccountsChange(accounts.current);
-    }, [accounts, onAccountsChange]);
-
-    useEffect(() => {
         completeZkLogin();
+        onAccountsChange(accounts.current);
+
         fetchBalances(accounts.current);
         const interval = setInterval(() => fetchBalances(accounts.current), 5_000);
+
         return () => { clearInterval(interval); };
-    }, []);
+    }, [accounts, onAccountsChange]);
 
     /* zkLogin end-to-end */
 
@@ -258,6 +258,8 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onAccountsChan
             aud: typeof jwtPayload.aud === "string" ? jwtPayload.aud : jwtPayload.aud[0],
             maxEpoch: setupData.maxEpoch,
         });
+        console.log("Account updated:", accounts.current);
+        onAccountsChange(accounts.current);
     }
 
     /**
@@ -270,6 +272,13 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onAccountsChan
         // Sign the transaction bytes with the ephemeral private key
         const txb = new TransactionBlock();
         txb.setSender(account.userAddr);
+
+        const txData = txb.moveCall({
+            target: `${CONSTANTS.demoContract.packageId}::data_label::new`,
+            arguments: [txb.pure.string("name"), txb.pure.string("https://pbs.twimg.com/profile_banners/833490425138737152/1654551065/1500x500"), txb.pure.string("url"), txb.pure.string("description")],
+        });
+
+        txb.transferObjects([txData], txb.pure.address(account.userAddr));
 
         const ephemeralKeyPair = keypairFromSecretKey(account.ephemeralPrivateKey);
         const { bytes, signature: userSignature } = await txb.sign({
@@ -316,6 +325,7 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({ onAccountsChan
                 setModalContent("");
             });
     }
+
 
     /**
      * Create a keypair from a base64-encoded secret key

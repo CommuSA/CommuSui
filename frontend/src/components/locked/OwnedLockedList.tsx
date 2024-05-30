@@ -3,15 +3,19 @@
 
 import { CONSTANTS } from "@/constants";
 import { InfiniteScrollArea } from "@/components/InfiniteScrollArea";
-import { useCurrentAccount, useSuiClientInfiniteQuery } from "@mysten/dapp-kit";
+import { useSuiClientInfiniteQuery } from "@mysten/dapp-kit";
 import { LockedObject } from "./LockedObject";
+import { AccountData } from "../zkloginconnect/zkloginconnect";
 
 /**
  * Similar to the `ApiLockedList` but fetches the owned locked objects
  * but fetches the objects from the on-chain state, instead of relying on the indexer API.
  */
-export function OwnedLockedList() {
-  const account = useCurrentAccount();
+interface OwnedLockedListProps {
+  account: AccountData;
+}
+
+export function OwnedLockedList({ account }: OwnedLockedListProps) {
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSuiClientInfiniteQuery(
@@ -20,14 +24,14 @@ export function OwnedLockedList() {
         filter: {
           StructType: CONSTANTS.escrowContract.lockedType,
         },
-        owner: account?.address!,
+        owner: account.userAddr!,
         options: {
           showContent: true,
           showOwner: true,
         },
       },
       {
-        enabled: !!account?.address,
+        enabled: !!account.userAddr,
         select: (data) => data.pages.flatMap((page) => page.data),
       },
     );
