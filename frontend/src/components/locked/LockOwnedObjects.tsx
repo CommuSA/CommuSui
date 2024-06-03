@@ -66,10 +66,10 @@ export function LockOwnedObjects({ account }: LockOwnedObjectsProps) {
     >
       {data?.map((obj) => (
         <SuiObjectDisplay object={obj.data!}>
-          <div className="text-right flex items-center justify-between">
-            <p className="text-sm">
+          <div className="text-right flex items-center ">
+            {/* <p className="text-sm">
               Lock the item so it can be used for escrows.
-            </p>
+            </p> */}
             <Button
               className="cursor-pointer"
               disabled={isPending}
@@ -92,17 +92,43 @@ export function LockOwnedObjects({ account }: LockOwnedObjectsProps) {
   );
 }
 
-export async function getDataShare(account: AccountData) {
-  let ownedObjects = await suiClient.getOwnedObjects({
-    owner: account.userAddr
+export async function getAsset(account: AccountData) {
+  const sender = account.userAddr;
+  const ownedObjects = await suiClient.getOwnedObjects({
+    owner: sender
   });
 
-  let ownedObjectsDetails = await Promise.all(ownedObjects.data.map(async (obj) => {
-    return await suiClient.getObject({ id: obj.data ? obj.data.objectId : '', options: { showType: true, showContent: true } });
-  }));
+  const ownedObjectsDetails = await Promise.all(
+    ownedObjects.data
+      .filter(obj => obj && obj.data)  // Filter out any objects without data early
+      .map(async (obj) => {
+        if (obj && obj.data) {
+          const details = await suiClient.getObject({
+            id: obj.data.objectId,
+            options: { showType: true, showContent: true }
+          });
+          return details;
+        }
+        return null;
+      })
+  );
+  // console.log(ownedObjectsDetails)
 
-  return ownedObjectsDetails.filter(obj => {
-    return `${CONSTANTS.demoContract.packageId}::data_label::DataLabeling` === obj.data?.type
-  }).map(obj => obj.data.content['fields']);
+  ownedObjectsDetails
+    .filter(obj => {
+      // console.log(obj)
+      return obj && obj.data && `${CONSTANTS.demoContract.packageId}::data_label::DataLabeling` === obj.data.type;
+    })
+    .map(obj => {
+      if (obj && obj.data && obj.data.content && 'fields' in obj.data.content) {
+        // console.log(obj.data.content as { fields: any })
 
+        return (obj.data.content as { fields: any })['fields'];
+      }
+      return null;
+    })
+  // console.log(ownedObjectsDetails)
+  return ownedObjectsDetails
+  // .filter(fields => fields !== null);
 }
+
